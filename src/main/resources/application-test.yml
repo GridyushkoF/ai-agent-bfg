@@ -10,7 +10,9 @@ spring:
         transcription: none
     openai:
       api-key: test-key
-      base-url: https://api.x.ai/v1
+      base-url: http://127.0.0.1
+      chat:
+        model: test-model
 
 app:
   security:
