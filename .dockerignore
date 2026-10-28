@@ -9,3 +9,5 @@ buildSrc/build
 out
 HELP.md
 .env
+frontend/node_modules
+frontend/dist
