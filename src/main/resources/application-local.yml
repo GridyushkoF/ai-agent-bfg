@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aichat
+    username: aichat
+    password: aichat
+  ai:
+    openai:
+      api-key: ${XAI_API_KEY:local-missing-xai-api-key}
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:local-dev-jwt-secret-change-me-32}
+
+logging:
+  level:
+    com.aichat.aichatdemo2: DEBUG

@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: ai-chat-demo-2
+  profiles:
+    default: local
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.sql
+  jooq:
+    sql-dialect: postgres
+  ai:
+    model:
+      chat: openai
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      api-key: ${XAI_API_KEY:}
+      base-url: https://api.x.ai/v1
+      chat:
+        model: ${XAI_MODEL:grok-4.7}
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:}
+      ttl: 12h
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

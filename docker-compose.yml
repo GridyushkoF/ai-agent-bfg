@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aichat
+      POSTGRES_USER: aichat
+      POSTGRES_PASSWORD: aichat
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aichat -d aichat"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - aichat-pg:/var/lib/postgresql/data
+
+volumes:
+  aichat-pg:

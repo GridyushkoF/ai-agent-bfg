@@ -1,0 +1,23 @@
+spring:
+  ai:
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      api-key: test-key
+      base-url: https://api.x.ai/v1
+
+app:
+  security:
+    jwt:
+      secret: test-secret-key-must-be-32-characters
+      ttl: 2h
+
+logging:
+  level:
+    com.aichat.aichatdemo2: INFO

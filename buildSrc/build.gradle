@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jooq:jooq-codegen:3.21.9'
+    implementation 'org.postgresql:postgresql:42.7.14'
+    implementation 'org.liquibase:liquibase-core:5.0.4'
+    implementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
