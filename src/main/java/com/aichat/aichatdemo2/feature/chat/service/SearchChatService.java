@@ -1,7 +1,8 @@
 package com.aichat.aichatdemo2.feature.chat.service;
 
+import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatSummaryResponse;
+import com.aichat.aichatdemo2.feature.chat.mapper.ChatAutoMapper;
 import com.aichat.aichatdemo2.feature.chat.repository.ChatRepository;
-import com.aichat.aichatdemo2.feature.chat.state.ChatInternalState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,16 @@ import java.util.UUID;
 public class SearchChatService {
 
     private final ChatRepository chatRepository;
+    private final ChatAutoMapper chatAutoMapper;
 
+    /**
+     * Возвращает чаты пользователя. Непустой запрос фильтрует по заголовку.
+     */
     @Transactional(readOnly = true)
-    public List<ChatInternalState> search(UUID userId, String query) {
-        log.debug("search chats enter userId={} filtered={}", userId, query != null && !query.isBlank());
-        List<ChatInternalState> chats = chatRepository.search(userId, query);
-        log.debug("search chats exit count={}", chats.size());
+    public List<ChatSummaryResponse> search(UUID userId, String query) {
+        log.debug("поиск чатов: вход userId={} фильтр={}", userId, query != null && !query.isBlank());
+        List<ChatSummaryResponse> chats = chatAutoMapper.toSummaries(chatRepository.search(userId, query));
+        log.debug("поиск чатов: выход count={}", chats.size());
         return chats;
     }
 }

@@ -1,6 +1,7 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
-import com.aichat.aichatdemo2.feature.chat.dto.SendMessageRequest;
+import com.aichat.aichatdemo2.feature.chat.dto.state.PreparedSendInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.web.request.SendMessageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
@@ -30,13 +31,16 @@ public class SendMessageFacade {
     private final ObjectMapper objectMapper;
     private final TaskExecutor chatStreamExecutor;
 
+    /**
+     * Сохраняет сообщение пользователя и стримит ответ бота в SSE.
+     */
     public SseEmitter send(UUID userId, UUID chatId, SendMessageRequest request) {
-        log.debug("send message enter userId={} chatId={}", userId, chatId);
+        log.debug("отправка сообщения: вход userId={} chatId={}", userId, chatId);
         PreparedSendInternalState prepared = saveUserMessageService.prepare(userId, chatId, request.getContent());
         SseEmitter emitter = new SseEmitter(Duration.ofMinutes(5).toMillis());
         emitter.onTimeout(emitter::complete);
         chatStreamExecutor.execute(() -> produce(prepared, emitter));
-        log.debug("send message exit chatId={}", chatId);
+        log.debug("отправка сообщения: выход chatId={}", chatId);
         return emitter;
     }
 
@@ -51,10 +55,10 @@ public class SendMessageFacade {
             send(emitter, DONE, Map.of("assistantMessageId", assistantId, "chatId", prepared.getChatId()));
             emitter.complete();
         } catch (ClientDisconnectedException exception) {
-            log.debug("sse client disconnected chatId={}", prepared.getChatId());
+            log.debug("клиент отключился от SSE chatId={}", prepared.getChatId());
             emitter.complete();
         } catch (RuntimeException exception) {
-            log.error("send message failed chatId={}", prepared.getChatId(), exception);
+            log.error("отправка сообщения не удалась chatId={}", prepared.getChatId(), exception);
             completeWithError(emitter);
         }
     }

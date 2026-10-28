@@ -27,6 +27,10 @@ app:
     jwt:
       secret: ${JWT_SECRET:}
       ttl: 12h
+  chat:
+    model-history: 40
+    title-max: 120
+    message-max: 16000
 
 server:
   port: 8080

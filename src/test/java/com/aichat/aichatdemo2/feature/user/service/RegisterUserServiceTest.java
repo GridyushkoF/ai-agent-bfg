@@ -1,14 +1,15 @@
 package com.aichat.aichatdemo2.feature.user.service;
 
-import com.aichat.aichatdemo2.feature.user.dto.RegisterRequest;
+import com.aichat.aichatdemo2.feature.user.dto.state.UserInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.web.request.RegisterRequest;
+import com.aichat.aichatdemo2.feature.user.mapper.UserAutoMapperImpl;
 import com.aichat.aichatdemo2.feature.user.repository.UserRepository;
-import com.aichat.aichatdemo2.feature.user.state.UserInternalState;
 import com.aichat.aichatdemo2.platform.exception.BusinessException;
 import com.aichat.aichatdemo2.platform.exception.ErrorCodes;
 import com.aichat.aichatdemo2.platform.security.JwtService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,8 +33,13 @@ class RegisterUserServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
-    @InjectMocks
     private RegisterUserService registerUserService;
+
+    @BeforeEach
+    void setUp() {
+        registerUserService = new RegisterUserService(
+                userRepository, passwordEncoder, jwtService, new UserAutoMapperImpl());
+    }
 
     @Test
     void storesHashedPasswordAndToken() {

@@ -42,8 +42,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(this::unauthorized)
                         .accessDeniedHandler(this::forbidden))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, ApiPaths.AUTH + "/register", ApiPaths.AUTH + "/login").permitAll()
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, ApiPaths.Auth.register(), ApiPaths.Auth.login()).permitAll()
+                        .requestMatchers(ApiPaths.Docs.SWAGGER_UI, ApiPaths.Docs.SWAGGER, ApiPaths.Docs.API_DOCS, ApiPaths.Docs.API_DOCS_ALL).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

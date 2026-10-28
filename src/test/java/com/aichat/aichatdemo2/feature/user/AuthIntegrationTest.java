@@ -20,7 +20,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         String login = loginOf(UUID.randomUUID().toString());
         String token = register(login);
 
-        mockMvc.perform(post(ApiPaths.AUTH + "/login")
+        mockMvc.perform(post(ApiPaths.Auth.login())
                         .contentType(APPLICATION_JSON)
                         .content("{\"login\":\"" + login.toUpperCase() + "\",\"password\":\"password123\"}"))
                 .andExpect(status().isOk())
@@ -28,7 +28,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.user.login").value(login))
                 .andExpect(jsonPath("$.user.passwordHash").doesNotExist());
 
-        mockMvc.perform(get(ApiPaths.USERS + "/me").header(AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiPaths.Users.me()).header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(login + "@example.com"));
     }
@@ -38,17 +38,17 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         String login = loginOf(UUID.randomUUID().toString());
         register(login);
 
-        mockMvc.perform(post(ApiPaths.AUTH + "/register").contentType(APPLICATION_JSON).content(body(login)))
+        mockMvc.perform(post(ApiPaths.Auth.register()).contentType(APPLICATION_JSON).content(body(login)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("LOGIN_TAKEN"));
-        mockMvc.perform(post(ApiPaths.AUTH + "/login")
+        mockMvc.perform(post(ApiPaths.Auth.login())
                         .contentType(APPLICATION_JSON)
                         .content("{\"login\":\"" + login + "\",\"password\":\"wrong-password\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
-        mockMvc.perform(get(ApiPaths.USERS + "/me"))
+        mockMvc.perform(get(ApiPaths.Users.me()))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(post(ApiPaths.AUTH + "/register")
+        mockMvc.perform(post(ApiPaths.Auth.register())
                         .contentType(APPLICATION_JSON)
                         .content("{\"login\":\"ab\",\"email\":\"bad\",\"password\":\"short\"}"))
                 .andExpect(status().isBadRequest())

@@ -1,10 +1,10 @@
 package com.aichat.aichatdemo2.feature.chat.mapper;
 
-import com.aichat.aichatdemo2.feature.chat.dto.ChatDetailsResponse;
-import com.aichat.aichatdemo2.feature.chat.dto.ChatSummaryResponse;
-import com.aichat.aichatdemo2.feature.chat.state.ChatInternalState;
-import com.aichat.aichatdemo2.feature.chat.state.ChatViewInternalState;
-import com.aichat.aichatdemo2.feature.chat.state.MessageInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.ChatInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.ChatViewInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatDetailsResponse;
+import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatSummaryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

@@ -22,16 +22,16 @@ public class AppExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ErrorResponse> handleApp(AppException exception) {
         if (exception instanceof TechnicalException) {
-            log.error("technical failure code={}", exception.getCode(), exception);
+            log.error("техническая ошибка code={}", exception.getCode(), exception);
         } else {
-            log.debug("request failed code={} message={}", exception.getCode(), exception.getMessage());
+            log.debug("запрос отклонён code={} message={}", exception.getCode(), exception.getMessage());
         }
         return errors.entity(exception.getStatus(), exception.getCode(), exception.getMessage(), exception.getDetails());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception exception) {
-        log.error("unexpected failure", exception);
+        log.error("непредвиденная ошибка", exception);
         return errors.entity(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.TECHNICAL, "Internal error", Map.of());
     }
 }

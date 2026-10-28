@@ -1,10 +1,9 @@
-package com.aichat.aichatdemo2.feature.chat.state;
+package com.aichat.aichatdemo2.feature.chat.dto.state;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -13,12 +12,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageInternalState {
+public class ChatInternalState {
 
     private UUID id;
-    private UUID chatId;
-    private MessageRole role;
-    @ToString.Exclude
-    private String content;
+    private UUID userId;
+    private String title;
     private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }

@@ -43,7 +43,7 @@ public abstract class AbstractIntegrationTest {
     protected ObjectMapper objectMapper;
 
     protected String register(String login) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiPaths.AUTH + "/register")
+        MvcResult result = mockMvc.perform(post(ApiPaths.Auth.register())
                         .contentType(APPLICATION_JSON)
                         .content(body(login)))
                 .andExpect(status().isCreated())

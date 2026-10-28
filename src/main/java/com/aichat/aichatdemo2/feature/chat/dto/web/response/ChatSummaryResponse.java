@@ -1,10 +1,9 @@
-package com.aichat.aichatdemo2.feature.user.state;
+package com.aichat.aichatdemo2.feature.chat.dto.web.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -13,13 +12,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInternalState {
+public class ChatSummaryResponse {
 
     private UUID id;
-    private String login;
-    @ToString.Exclude
-    private String email;
-    @ToString.Exclude
-    private String passwordHash;
+    private String title;
     private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }

@@ -2,11 +2,50 @@ package com.aichat.aichatdemo2.platform.util;
 
 public final class ApiPaths {
 
-    public static final String V1 = "/api/v1";
-    public static final String AUTH = V1 + "/auth";
-    public static final String USERS = V1 + "/users";
-    public static final String CHATS = V1 + "/chats";
-
     private ApiPaths() {
+    }
+
+    public interface Auth {
+        String BASE = "/api/v1/auth";
+        String REGISTER = "/register";
+        String LOGIN = "/login";
+
+        static String register() {
+            return BASE + REGISTER;
+        }
+
+        static String login() {
+            return BASE + LOGIN;
+        }
+    }
+
+    public interface Users {
+        String BASE = "/api/v1/users";
+        String ME = "/me";
+
+        static String me() {
+            return BASE + ME;
+        }
+    }
+
+    public interface Chats {
+        String BASE = "/api/v1/chats";
+        String BY_ID = "/{chatId}";
+        String MESSAGES = "/{chatId}/messages";
+
+        static String chat(String chatId) {
+            return (BASE + BY_ID).replace("{chatId}", chatId);
+        }
+
+        static String messages(String chatId) {
+            return (BASE + MESSAGES).replace("{chatId}", chatId);
+        }
+    }
+
+    public interface Docs {
+        String SWAGGER_UI = "/swagger-ui.html";
+        String SWAGGER = "/swagger-ui/**";
+        String API_DOCS = "/v3/api-docs";
+        String API_DOCS_ALL = "/v3/api-docs/**";
     }
 }

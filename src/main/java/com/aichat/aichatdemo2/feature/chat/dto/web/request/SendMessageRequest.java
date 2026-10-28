@@ -1,7 +1,6 @@
-package com.aichat.aichatdemo2.feature.user.dto;
+package com.aichat.aichatdemo2.feature.chat.dto.web.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,13 +12,9 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class SendMessageRequest {
 
     @NotBlank
-    @Size(min = 3, max = 64)
-    private String login;
-
-    @NotBlank
-    @Size(min = 8, max = 72)
-    private String password;
+    @MessageContent
+    private String content;
 }

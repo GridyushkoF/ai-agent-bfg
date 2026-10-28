@@ -1,6 +1,5 @@
-package com.aichat.aichatdemo2.feature.chat.dto;
+package com.aichat.aichatdemo2.feature.user.dto.web.request;
 
-import com.aichat.aichatdemo2.feature.chat.ChatLimits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,9 +13,13 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @NoArgsConstructor
 @AllArgsConstructor
-public class SendMessageRequest {
+public class LoginRequest {
 
     @NotBlank
-    @Size(max = ChatLimits.MESSAGE_MAX)
-    private String content;
+    @Size(min = 3, max = 64)
+    private String login;
+
+    @NotBlank
+    @Size(min = 8, max = 72)
+    private String password;
 }

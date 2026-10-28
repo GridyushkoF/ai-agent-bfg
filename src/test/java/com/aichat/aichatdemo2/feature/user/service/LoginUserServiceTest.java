@@ -1,13 +1,14 @@
 package com.aichat.aichatdemo2.feature.user.service;
 
-import com.aichat.aichatdemo2.feature.user.dto.LoginRequest;
+import com.aichat.aichatdemo2.feature.user.dto.web.request.LoginRequest;
+import com.aichat.aichatdemo2.feature.user.mapper.UserAutoMapperImpl;
 import com.aichat.aichatdemo2.platform.exception.BusinessException;
 import com.aichat.aichatdemo2.platform.exception.ErrorCodes;
 import com.aichat.aichatdemo2.platform.security.AppUserDetails;
 import com.aichat.aichatdemo2.platform.security.JwtService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,8 +29,12 @@ class LoginUserServiceTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private JwtService jwtService;
-    @InjectMocks
     private LoginUserService loginUserService;
+
+    @BeforeEach
+    void setUp() {
+        loginUserService = new LoginUserService(authenticationManager, jwtService, new UserAutoMapperImpl());
+    }
 
     @Test
     void returnsTokenForValidCredentials() {

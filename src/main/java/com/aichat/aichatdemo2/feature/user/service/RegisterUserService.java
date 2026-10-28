@@ -1,9 +1,11 @@
 package com.aichat.aichatdemo2.feature.user.service;
 
-import com.aichat.aichatdemo2.feature.user.dto.RegisterRequest;
+import com.aichat.aichatdemo2.feature.user.dto.state.AuthInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.state.UserInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.web.request.RegisterRequest;
+import com.aichat.aichatdemo2.feature.user.dto.web.response.AuthResponse;
+import com.aichat.aichatdemo2.feature.user.mapper.UserAutoMapper;
 import com.aichat.aichatdemo2.feature.user.repository.UserRepository;
-import com.aichat.aichatdemo2.feature.user.state.AuthInternalState;
-import com.aichat.aichatdemo2.feature.user.state.UserInternalState;
 import com.aichat.aichatdemo2.platform.exception.BusinessException;
 import com.aichat.aichatdemo2.platform.exception.ErrorCodes;
 import com.aichat.aichatdemo2.platform.security.JwtService;
@@ -24,12 +26,16 @@ public class RegisterUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserAutoMapper userAutoMapper;
 
+    /**
+     * Регистрирует пользователя и выдаёт токен доступа.
+     */
     @Transactional
-    public AuthInternalState register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         String login = request.getLogin().trim().toLowerCase(Locale.ROOT);
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        log.debug("register enter login={}", login);
+        log.debug("регистрация: вход login={}", login);
         if (userRepository.existsByLogin(login)) {
             throw BusinessException.conflict(ErrorCodes.LOGIN_TAKEN, "Login is already taken");
         }
@@ -38,9 +44,8 @@ public class RegisterUserService {
         }
         try {
             UserInternalState user = userRepository.insert(login, email, passwordEncoder.encode(request.getPassword()));
-            AuthInternalState auth = tokenFor(user);
-            log.debug("register exit userId={}", user.getId());
-            return auth;
+            log.debug("регистрация: выход userId={}", user.getId());
+            return userAutoMapper.toAuth(tokenFor(user));
         } catch (DuplicateKeyException exception) {
             throw duplicate(exception);
         }

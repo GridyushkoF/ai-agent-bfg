@@ -1,9 +1,8 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageRole;
 import com.aichat.aichatdemo2.feature.chat.repository.ChatRepository;
 import com.aichat.aichatdemo2.feature.chat.repository.MessageRepository;
-import com.aichat.aichatdemo2.feature.chat.state.MessageInternalState;
-import com.aichat.aichatdemo2.feature.chat.state.MessageRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,16 @@ public class SaveAssistantMessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
 
+    /**
+     * Сохраняет ответ бота и обновляет время чата.
+     */
     @Transactional
     public UUID save(UUID chatId, String content) {
-        log.debug("save assistant message enter chatId={}", chatId);
+        log.debug("сохранение ответа: вход chatId={}", chatId);
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        MessageInternalState message = messageRepository.insert(chatId, MessageRole.ASSISTANT, content, now);
+        var message = messageRepository.insert(chatId, MessageRole.ASSISTANT, content, now);
         chatRepository.touch(chatId, now);
-        log.debug("save assistant message exit messageId={}", message.getId());
+        log.debug("сохранение ответа: выход messageId={}", message.getId());
         return message.getId();
     }
 }

@@ -1,5 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
+import com.aichat.aichatdemo2.feature.chat.ChatProperties;
 import com.aichat.aichatdemo2.feature.chat.repository.ChatRepository;
 import com.aichat.aichatdemo2.support.StubChatModel;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ import static org.mockito.Mockito.when;
 class GenerateChatTitleServiceTest {
 
     private final ChatRepository chatRepository = mock(ChatRepository.class);
-    private final GenerateChatTitleService service =
-            new GenerateChatTitleService(ChatClient.create(new StubChatModel()), chatRepository);
+    private final GenerateChatTitleService service = new GenerateChatTitleService(
+            ChatClient.create(new StubChatModel()), chatRepository, new ChatProperties());
 
     @Test
     void storesNormalizedTitleOnce() {
@@ -36,7 +37,7 @@ class GenerateChatTitleServiceTest {
 
     @Test
     void normalizeFallsBackWhenBlank() {
-        assertThat(GenerateChatTitleService.normalize("   ")).isEqualTo("New chat");
-        assertThat(GenerateChatTitleService.normalize(null)).isEqualTo("New chat");
+        assertThat(service.normalize("   ")).isEqualTo("New chat");
+        assertThat(service.normalize(null)).isEqualTo("New chat");
     }
 }

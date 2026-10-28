@@ -1,8 +1,10 @@
 package com.aichat.aichatdemo2.feature.user.service;
 
-import com.aichat.aichatdemo2.feature.user.dto.LoginRequest;
-import com.aichat.aichatdemo2.feature.user.state.AuthInternalState;
-import com.aichat.aichatdemo2.feature.user.state.UserInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.state.AuthInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.state.UserInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.web.request.LoginRequest;
+import com.aichat.aichatdemo2.feature.user.dto.web.response.AuthResponse;
+import com.aichat.aichatdemo2.feature.user.mapper.UserAutoMapper;
 import com.aichat.aichatdemo2.platform.exception.BusinessException;
 import com.aichat.aichatdemo2.platform.security.AppUserDetails;
 import com.aichat.aichatdemo2.platform.security.JwtService;
@@ -23,10 +25,14 @@ public class LoginUserService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserAutoMapper userAutoMapper;
 
-    public AuthInternalState login(LoginRequest request) {
+    /**
+     * Проверяет логин и пароль и выдаёт токен доступа.
+     */
+    public AuthResponse login(LoginRequest request) {
         String login = request.getLogin().trim().toLowerCase(Locale.ROOT);
-        log.debug("login enter login={}", login);
+        log.debug("вход: начало login={}", login);
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(login, request.getPassword()));
@@ -40,8 +46,8 @@ public class LoginUserService {
                             .createdAt(user.getCreatedAt())
                             .build())
                     .build();
-            log.debug("login exit userId={}", user.getUserId());
-            return auth;
+            log.debug("вход: конец userId={}", user.getUserId());
+            return userAutoMapper.toAuth(auth);
         } catch (BadCredentialsException exception) {
             throw BusinessException.unauthorized("Invalid login or password");
         }

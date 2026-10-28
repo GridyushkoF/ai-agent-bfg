@@ -1,6 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
-import com.aichat.aichatdemo2.feature.chat.ChatLimits;
+import com.aichat.aichatdemo2.feature.chat.ChatProperties;
 import com.aichat.aichatdemo2.feature.chat.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,24 +23,28 @@ public class GenerateChatTitleService {
 
     private final ChatClient chatClient;
     private final ChatRepository chatRepository;
+    private final ChatProperties chatProperties;
 
+    /**
+     * Один раз задаёт заголовок чата по первому сообщению. Ошибка модели не прерывает ответ.
+     */
     public Optional<String> generateAndStore(UUID chatId, String userContent) {
-        log.debug("generate title enter chatId={}", chatId);
+        log.debug("заголовок чата: вход chatId={}", chatId);
         try {
             String title = normalize(chatClient.prompt().system(SYSTEM).user(userContent).call().content());
             if (!chatRepository.setTitleIfAbsent(chatId, title)) {
-                log.debug("generate title exit skipped chatId={}", chatId);
+                log.debug("заголовок чата: пропуск chatId={}", chatId);
                 return Optional.empty();
             }
-            log.debug("generate title exit length={}", title.length());
+            log.debug("заголовок чата: выход length={}", title.length());
             return Optional.of(title);
         } catch (RuntimeException exception) {
-            log.error("generate title failed chatId={}", chatId, exception);
+            log.error("заголовок чата не создан chatId={}", chatId, exception);
             return Optional.empty();
         }
     }
 
-    static String normalize(String raw) {
+    String normalize(String raw) {
         if (raw == null) {
             return "New chat";
         }
@@ -51,10 +55,11 @@ public class GenerateChatTitleService {
         if (collapsed.isEmpty()) {
             return "New chat";
         }
-        if (collapsed.length() <= ChatLimits.TITLE_MAX) {
+        int titleMax = chatProperties.getTitleMax();
+        if (collapsed.length() <= titleMax) {
             return collapsed;
         }
-        return collapsed.substring(0, ChatLimits.TITLE_MAX).trim();
+        return collapsed.substring(0, titleMax).trim();
     }
 
     private static boolean wrapped(String value) {

@@ -1,7 +1,7 @@
 package com.aichat.aichatdemo2.feature.chat.repository;
 
-import com.aichat.aichatdemo2.feature.chat.state.MessageInternalState;
-import com.aichat.aichatdemo2.feature.chat.state.MessageRole;
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageRole;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.jooq.Record;

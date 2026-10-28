@@ -21,21 +21,21 @@ class ChatIntegrationTest extends AbstractIntegrationTest {
         String other = register(loginOf(UUID.randomUUID().toString()));
         String chatId = createChat(owner);
 
-        mockMvc.perform(get(ApiPaths.CHATS).header(AUTHORIZATION, "Bearer " + owner))
+        mockMvc.perform(get(ApiPaths.Chats.BASE).header(AUTHORIZATION, "Bearer " + owner))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(chatId))
                 .andExpect(jsonPath("$[0].title").value(nullValue()));
-        mockMvc.perform(get(ApiPaths.CHATS + "/" + chatId).header(AUTHORIZATION, "Bearer " + owner))
+        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + owner))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages.length()").value(0));
-        mockMvc.perform(get(ApiPaths.CHATS + "/" + chatId).header(AUTHORIZATION, "Bearer " + other))
+        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + other))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 
     private String createChat(String token) throws Exception {
-        var result = mockMvc.perform(post(ApiPaths.CHATS).header(AUTHORIZATION, "Bearer " + token))
+        var result = mockMvc.perform(post(ApiPaths.Chats.BASE).header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isCreated())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asString();

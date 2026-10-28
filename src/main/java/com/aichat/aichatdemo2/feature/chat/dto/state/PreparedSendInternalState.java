@@ -1,6 +1,5 @@
-package com.aichat.aichatdemo2.feature.chat.service.send;
+package com.aichat.aichatdemo2.feature.chat.dto.state;
 
-import com.aichat.aichatdemo2.feature.chat.state.MessageInternalState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

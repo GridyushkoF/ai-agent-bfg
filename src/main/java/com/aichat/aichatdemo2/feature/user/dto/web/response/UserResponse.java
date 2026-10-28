@@ -1,4 +1,4 @@
-package com.aichat.aichatdemo2.feature.user.dto;
+package com.aichat.aichatdemo2.feature.user.dto.web.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

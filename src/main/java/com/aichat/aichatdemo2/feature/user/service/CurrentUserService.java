@@ -1,7 +1,9 @@
 package com.aichat.aichatdemo2.feature.user.service;
 
+import com.aichat.aichatdemo2.feature.user.dto.state.UserInternalState;
+import com.aichat.aichatdemo2.feature.user.dto.web.response.UserResponse;
+import com.aichat.aichatdemo2.feature.user.mapper.UserAutoMapper;
 import com.aichat.aichatdemo2.feature.user.repository.UserRepository;
-import com.aichat.aichatdemo2.feature.user.state.UserInternalState;
 import com.aichat.aichatdemo2.platform.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +18,17 @@ import java.util.UUID;
 public class CurrentUserService {
 
     private final UserRepository userRepository;
+    private final UserAutoMapper userAutoMapper;
 
+    /**
+     * Возвращает профиль пользователя.
+     */
     @Transactional(readOnly = true)
-    public UserInternalState me(UUID userId) {
-        log.debug("me enter userId={}", userId);
+    public UserResponse me(UUID userId) {
+        log.debug("профиль: вход userId={}", userId);
         UserInternalState user = userRepository.findById(userId)
                 .orElseThrow(() -> BusinessException.unauthorized("Authentication required"));
-        log.debug("me exit login={}", user.getLogin());
-        return user;
+        log.debug("профиль: выход login={}", user.getLogin());
+        return userAutoMapper.toUser(user);
     }
 }

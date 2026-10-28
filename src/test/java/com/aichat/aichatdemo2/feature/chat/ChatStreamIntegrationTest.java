@@ -23,7 +23,7 @@ class ChatStreamIntegrationTest extends AbstractIntegrationTest {
     @Test
     void streamsMarkdownAndGeneratesTitleOnce() throws Exception {
         String token = register(loginOf(UUID.randomUUID().toString()));
-        String chatId = mockMvc.perform(post(ApiPaths.CHATS).header(AUTHORIZATION, "Bearer " + token))
+        String chatId = mockMvc.perform(post(ApiPaths.Chats.BASE).header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         chatId = objectMapper.readTree(chatId).get("id").asString();
@@ -31,7 +31,7 @@ class ChatStreamIntegrationTest extends AbstractIntegrationTest {
         String first = stream(token, chatId, "Alpha reactors");
         assertThat(first).contains("event:delta", "Hello from the bot", "event:title", "Alpha reactors", "event:done");
 
-        mockMvc.perform(get(ApiPaths.CHATS + "/" + chatId).header(AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Alpha reactors"))
                 .andExpect(jsonPath("$.messages.length()").value(2))
@@ -41,16 +41,16 @@ class ChatStreamIntegrationTest extends AbstractIntegrationTest {
 
         String second = stream(token, chatId, "Beta follow up");
         assertThat(second).doesNotContain("event:title");
-        mockMvc.perform(get(ApiPaths.CHATS).param("query", "alpha").header(AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiPaths.Chats.BASE).param("query", "alpha").header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
-        mockMvc.perform(get(ApiPaths.CHATS).param("query", "missing").header(AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiPaths.Chats.BASE).param("query", "missing").header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     private String stream(String token, String chatId, String content) throws Exception {
-        MvcResult started = mockMvc.perform(post(ApiPaths.CHATS + "/" + chatId + "/messages")
+        MvcResult started = mockMvc.perform(post(ApiPaths.Chats.messages(chatId))
                         .header(AUTHORIZATION, "Bearer " + token)
                         .contentType(APPLICATION_JSON)
                         .accept(TEXT_EVENT_STREAM)

@@ -1,7 +1,7 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
-import com.aichat.aichatdemo2.feature.chat.state.MessageInternalState;
-import com.aichat.aichatdemo2.feature.chat.state.MessageRole;
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.MessageRole;
 import com.aichat.aichatdemo2.platform.exception.TechnicalException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,11 @@ public class StreamAssistantReplyService {
 
     private final ChatClient chatClient;
 
+    /**
+     * Запрашивает у модели ответ по истории и отдаёт куски текста по мере генерации.
+     */
     public String stream(List<MessageInternalState> history, Consumer<String> onDelta) {
-        log.debug("stream reply enter messages={}", history.size());
+        log.debug("поток ответа: вход messages={}", history.size());
         StringBuilder full = new StringBuilder();
         chatClient.prompt()
                 .messages(toMessages(history))
@@ -38,7 +41,7 @@ public class StreamAssistantReplyService {
         if (full.isEmpty()) {
             throw new TechnicalException("AI returned an empty response", null);
         }
-        log.debug("stream reply exit chars={}", full.length());
+        log.debug("поток ответа: выход chars={}", full.length());
         return full.toString();
     }
 

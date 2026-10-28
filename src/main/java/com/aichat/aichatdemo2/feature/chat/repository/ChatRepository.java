@@ -1,6 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat.repository;
 
-import com.aichat.aichatdemo2.feature.chat.state.ChatInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.ChatInternalState;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
