@@ -10,10 +10,10 @@ import java.util.UUID;
 @Component
 public class CurrentUser {
 
-    public UUID id() {
+    public UUID requireId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof AppPrincipal principal)) {
-            throw BusinessException.unauthorized("Authentication required");
+            throw BusinessException.createUnauthorized("Authentication required");
         }
         return principal.getUserId();
     }

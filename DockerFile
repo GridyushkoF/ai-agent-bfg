@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1
+
+FROM eclipse-temurin:25-jdk AS jdk
+
+FROM postgres:16 AS build
+USER root
+COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+WORKDIR /workspace
+COPY gradlew settings.gradle build.gradle ./
+COPY gradle gradle
+COPY buildSrc buildSrc
+COPY src src
+RUN set -eux; \
+    chmod +x gradlew; \
+    mkdir -p /tmp/pgdata; \
+    chown postgres:postgres /tmp/pgdata; \
+    su postgres -c "/usr/lib/postgresql/16/bin/initdb -D /tmp/pgdata --username=postgres --auth=trust"; \
+    su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D /tmp/pgdata -o '-k /tmp -c listen_addresses=127.0.0.1' -w start"; \
+    su postgres -c "/usr/lib/postgresql/16/bin/psql -h 127.0.0.1 -d postgres -c \"CREATE USER aichat WITH PASSWORD 'aichat' SUPERUSER\""; \
+    su postgres -c "/usr/lib/postgresql/16/bin/psql -h 127.0.0.1 -d postgres -c \"CREATE DATABASE aichat OWNER aichat\""; \
+    JOOQ_JDBC_URL='jdbc:postgresql://127.0.0.1:5432/aichat' \
+    JOOQ_JDBC_USER='aichat' \
+    JOOQ_JDBC_PASSWORD='aichat' \
+    ./gradlew bootJar --no-daemon -x test; \
+    su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D /tmp/pgdata -m fast -w stop"; \
+    find build/libs -name '*-plain.jar' -delete; \
+    cp build/libs/*.jar /workspace/app.jar
+
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+RUN useradd --system --home-dir /app app
+COPY --from=build /workspace/app.jar /app/app.jar
+USER app
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

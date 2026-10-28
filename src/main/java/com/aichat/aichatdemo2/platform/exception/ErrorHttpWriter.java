@@ -18,18 +18,18 @@ public class ErrorHttpWriter {
 
     private final ObjectMapper objectMapper;
 
-    public ResponseEntity<ErrorResponse> entity(HttpStatus status, String code, String message, Map<String, Object> details) {
-        return ResponseEntity.status(status).body(body(code, message, details));
+    public ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String code, String message, Map<String, Object> details) {
+        return ResponseEntity.status(status).body(buildBody(code, message, details));
     }
 
     public void write(HttpServletResponse response, HttpStatus status, String code, String message) throws IOException {
         response.setStatus(status.value());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), body(code, message, Map.of()));
+        objectMapper.writeValue(response.getOutputStream(), buildBody(code, message, Map.of()));
     }
 
-    public ErrorResponse body(String code, String message, Map<String, Object> details) {
+    public ErrorResponse buildBody(String code, String message, Map<String, Object> details) {
         return ErrorResponse.builder()
                 .code(code)
                 .message(message)

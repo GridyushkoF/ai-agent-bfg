@@ -1,6 +1,7 @@
 package com.aichat.aichatdemo2.feature.user.repository;
 
 import com.aichat.aichatdemo2.feature.user.dto.state.UserInternalState;
+import com.aichat.aichatdemo2.platform.util.UtcTime;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -60,7 +61,7 @@ public class UserRepository {
                 .login(record.get(APP_USER.LOGIN))
                 .email(record.get(APP_USER.EMAIL))
                 .passwordHash(record.get(APP_USER.PASSWORD_HASH))
-                .createdAt(record.get(APP_USER.CREATED_AT))
+                .createdAt(UtcTime.toUtc(record.get(APP_USER.CREATED_AT)))
                 .build();
     }
 }

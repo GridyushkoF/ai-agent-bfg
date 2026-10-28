@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.aichat.aichatdemo2.feature.chat.dto.enumerated.MessageRole;
 import lombok.ToString;
 
 import java.time.OffsetDateTime;

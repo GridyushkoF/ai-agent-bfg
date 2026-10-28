@@ -27,6 +27,10 @@ public class StubChatModel implements ChatModel {
 
     @Override
     public Flux<ChatResponse> stream(Prompt prompt) {
+        String user = prompt.getUserMessage() == null ? "" : prompt.getUserMessage().getText();
+        if ("fail-the-model".equals(user)) {
+            return Flux.error(new IllegalStateException("model down"));
+        }
         return Flux.just("## Answer\n\n", "Hello from the bot.").map(StubChatModel::reply);
     }
 

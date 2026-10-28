@@ -23,7 +23,7 @@ public final class ApiPaths {
         String BASE = "/api/v1/users";
         String ME = "/me";
 
-        static String me() {
+        static String buildProfilePath() {
             return BASE + ME;
         }
     }
@@ -33,11 +33,11 @@ public final class ApiPaths {
         String BY_ID = "/{chatId}";
         String MESSAGES = "/{chatId}/messages";
 
-        static String chat(String chatId) {
+        static String buildChatPath(String chatId) {
             return (BASE + BY_ID).replace("{chatId}", chatId);
         }
 
-        static String messages(String chatId) {
+        static String buildMessagesPath(String chatId) {
             return (BASE + MESSAGES).replace("{chatId}", chatId);
         }
     }

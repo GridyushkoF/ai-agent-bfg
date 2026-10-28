@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aichat
+      POSTGRES_USER: aichat
+      POSTGRES_PASSWORD: aichat
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aichat -d aichat"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - aichat-full-pg:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aichat
+      SPRING_DATASOURCE_USERNAME: aichat
+      SPRING_DATASOURCE_PASSWORD: aichat
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      XAI_MODEL: ${XAI_MODEL:-grok-4.7}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-me-32}
+    ports:
+      - "8080:8080"
+
+volumes:
+  aichat-full-pg:

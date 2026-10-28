@@ -47,9 +47,9 @@ public class LoginUserService {
                             .build())
                     .build();
             log.debug("вход: конец userId={}", user.getUserId());
-            return userAutoMapper.toAuth(auth);
+            return userAutoMapper.mapToAuth(auth);
         } catch (BadCredentialsException exception) {
-            throw BusinessException.unauthorized("Invalid login or password");
+            throw BusinessException.createUnauthorized("Invalid login or password");
         }
     }
 }

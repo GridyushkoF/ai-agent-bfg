@@ -1,5 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat;
 
+import com.aichat.aichatdemo2.feature.chat.dto.web.request.SendMessageRequest;
 import com.aichat.aichatdemo2.platform.util.ApiPaths;
 import com.aichat.aichatdemo2.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM;
@@ -31,30 +34,55 @@ class ChatStreamIntegrationTest extends AbstractIntegrationTest {
         String first = stream(token, chatId, "Alpha reactors");
         assertThat(first).contains("event:delta", "Hello from the bot", "event:title", "Alpha reactors", "event:done");
 
-        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiPaths.Chats.buildChatPath(chatId)).header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Alpha reactors"))
                 .andExpect(jsonPath("$.messages.length()").value(2))
                 .andExpect(jsonPath("$.messages[0].role").value("USER"))
                 .andExpect(jsonPath("$.messages[1].role").value("ASSISTANT"))
-                .andExpect(jsonPath("$.messages[1].content").value("## Answer\n\nHello from the bot."));
+                .andExpect(jsonPath("$.messages[1].content").value("## Answer\n\nHello from the bot."))
+                .andExpect(jsonPath("$.createdAt", endsWith("Z")))
+                .andExpect(jsonPath("$.messages[0].createdAt", endsWith("Z")));
 
         String second = stream(token, chatId, "Beta follow up");
         assertThat(second).doesNotContain("event:title");
         mockMvc.perform(get(ApiPaths.Chats.BASE).param("query", "alpha").header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.items.length()").value(1));
         mockMvc.perform(get(ApiPaths.Chats.BASE).param("query", "missing").header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.items.length()").value(0));
+    }
+
+    @Test
+    void dropsUserMessageWhenModelFails() throws Exception {
+        String token = register(loginOf(UUID.randomUUID().toString()));
+        String chatId = mockMvc.perform(post(ApiPaths.Chats.BASE).header(AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        chatId = objectMapper.readTree(chatId).get("id").asString();
+
+        String failed = stream(token, chatId, "fail-the-model");
+        assertThat(failed).contains("event:error");
+        mockMvc.perform(get(ApiPaths.Chats.buildChatPath(chatId)).header(AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages.length()").value(0))
+                .andExpect(jsonPath("$.title").value(nullValue()));
+
+        String recovered = stream(token, chatId, "Alpha reactors");
+        assertThat(recovered).contains("event:title", "Alpha reactors");
+        mockMvc.perform(get(ApiPaths.Chats.buildChatPath(chatId)).header(AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages.length()").value(2))
+                .andExpect(jsonPath("$.messages[0].content").value("Alpha reactors"));
     }
 
     private String stream(String token, String chatId, String content) throws Exception {
-        MvcResult started = mockMvc.perform(post(ApiPaths.Chats.messages(chatId))
+        MvcResult started = mockMvc.perform(post(ApiPaths.Chats.buildMessagesPath(chatId))
                         .header(AUTHORIZATION, "Bearer " + token)
                         .contentType(APPLICATION_JSON)
                         .accept(TEXT_EVENT_STREAM)
-                        .content("{\"content\":\"" + content + "\"}"))
+                        .content(writeJson(SendMessageRequest.builder().content(content).build())))
                 .andExpect(request().asyncStarted())
                 .andReturn();
         return mockMvc.perform(asyncDispatch(started))

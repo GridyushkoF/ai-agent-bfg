@@ -15,6 +15,7 @@ import java.util.UUID;
 public class PreparedSendInternalState {
 
     private UUID chatId;
+    private UUID userMessageId;
     private String userContent;
     private boolean titleMissing;
     private List<MessageInternalState> history;

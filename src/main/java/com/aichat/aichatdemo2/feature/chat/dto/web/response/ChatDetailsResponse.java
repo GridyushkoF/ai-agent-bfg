@@ -20,6 +20,7 @@ public class ChatDetailsResponse {
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
     private List<MessageItem> messages;
+    private String nextCursor;
 
     @Data
     @Builder

@@ -11,6 +11,7 @@ import com.aichat.aichatdemo2.platform.exception.ErrorCodes;
 import com.aichat.aichatdemo2.platform.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,32 +38,42 @@ public class RegisterUserService {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         log.debug("регистрация: вход login={}", login);
         if (userRepository.existsByLogin(login)) {
-            throw BusinessException.conflict(ErrorCodes.LOGIN_TAKEN, "Login is already taken");
+            throw BusinessException.createConflict(ErrorCodes.LOGIN_TAKEN, "Login is already taken");
         }
         if (userRepository.existsByEmail(email)) {
-            throw BusinessException.conflict(ErrorCodes.EMAIL_TAKEN, "Email is already taken");
+            throw BusinessException.createConflict(ErrorCodes.EMAIL_TAKEN, "Email is already taken");
         }
         try {
             UserInternalState user = userRepository.insert(login, email, passwordEncoder.encode(request.getPassword()));
             log.debug("регистрация: выход userId={}", user.getId());
-            return userAutoMapper.toAuth(tokenFor(user));
+            return userAutoMapper.mapToAuth(buildAuthState(user));
         } catch (DuplicateKeyException exception) {
-            throw duplicate(exception);
+            throw mapDuplicateKey(exception);
         }
     }
 
-    private AuthInternalState tokenFor(UserInternalState user) {
+    private AuthInternalState buildAuthState(UserInternalState user) {
         return AuthInternalState.builder()
                 .accessToken(jwtService.issue(user.getId(), user.getLogin()))
                 .user(user)
                 .build();
     }
 
-    private static BusinessException duplicate(DuplicateKeyException exception) {
-        String message = exception.getMostSpecificCause().getMessage();
-        if (message != null && message.contains("ux_app_user_email")) {
-            return BusinessException.conflict(ErrorCodes.EMAIL_TAKEN, "Email is already taken");
+    private static BusinessException mapDuplicateKey(DuplicateKeyException exception) {
+        if ("ux_app_user_email".equals(findConstraint(exception))) {
+            return BusinessException.createConflict(ErrorCodes.EMAIL_TAKEN, "Email is already taken");
         }
-        return BusinessException.conflict(ErrorCodes.LOGIN_TAKEN, "Login is already taken");
+        return BusinessException.createConflict(ErrorCodes.LOGIN_TAKEN, "Login is already taken");
+    }
+
+    private static String findConstraint(Throwable exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof PSQLException psql && psql.getServerErrorMessage() != null) {
+                return psql.getServerErrorMessage().getConstraint();
+            }
+            current = current.getCause();
+        }
+        return null;
     }
 }

@@ -1,6 +1,9 @@
 package com.aichat.aichatdemo2.feature.chat.repository;
 
+import com.aichat.aichatdemo2.feature.chat.ChatProperties;
 import com.aichat.aichatdemo2.feature.chat.dto.state.ChatInternalState;
+import com.aichat.aichatdemo2.feature.chat.dto.state.ChatPageInternalState;
+import com.aichat.aichatdemo2.platform.util.UtcTime;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -41,15 +44,15 @@ public class ChatRepository {
                 .fetchOptional(this::map);
     }
 
-    public List<ChatInternalState> search(UUID userId, String query) {
-        Condition condition = CHAT.USER_ID.eq(userId);
-        if (query != null && !query.isBlank()) {
-            condition = condition.and(CHAT.TITLE.isNotNull()).and(DSL.lower(CHAT.TITLE).like(likePattern(query), '\\'));
-        }
-        return dsl.selectFrom(CHAT)
-                .where(condition)
+    public ChatPageInternalState search(UUID userId, String query, int limit, KeysetCursor.Position cursor) {
+        List<ChatInternalState> fetched = dsl.selectFrom(CHAT)
+                .where(condition(userId, query, cursor))
                 .orderBy(CHAT.UPDATED_AT.desc(), CHAT.ID.desc())
+                .limit(limit + 1)
                 .fetch(this::map);
+        PageSlice<ChatInternalState> slice = PageSlice.take(
+                fetched, limit, chat -> KeysetCursor.encode(chat.getUpdatedAt(), chat.getId()));
+        return ChatPageInternalState.builder().items(slice.getItems()).nextCursor(slice.getNextCursor()).build();
     }
 
     public void touch(UUID chatId, OffsetDateTime updatedAt) {
@@ -57,10 +60,23 @@ public class ChatRepository {
     }
 
     public boolean setTitleIfAbsent(UUID chatId, String title) {
+        String value = title.length() > ChatProperties.TITLE_COLUMN_LIMIT
+                ? title.substring(0, ChatProperties.TITLE_COLUMN_LIMIT).trim() : title;
         return dsl.update(CHAT)
-                .set(CHAT.TITLE, title)
+                .set(CHAT.TITLE, value)
                 .where(CHAT.ID.eq(chatId).and(CHAT.TITLE.isNull()))
                 .execute() == 1;
+    }
+
+    private static Condition condition(UUID userId, String query, KeysetCursor.Position cursor) {
+        Condition condition = CHAT.USER_ID.eq(userId);
+        if (query != null && !query.isBlank()) {
+            condition = condition.and(CHAT.TITLE.isNotNull()).and(DSL.lower(CHAT.TITLE).like(buildLikePattern(query), '\\'));
+        }
+        if (cursor != null) {
+            condition = condition.and(DSL.row(CHAT.UPDATED_AT, CHAT.ID).lt(cursor.getTime(), cursor.getId()));
+        }
+        return condition;
     }
 
     private ChatInternalState map(Record record) {
@@ -68,12 +84,12 @@ public class ChatRepository {
                 .id(record.get(CHAT.ID))
                 .userId(record.get(CHAT.USER_ID))
                 .title(record.get(CHAT.TITLE))
-                .createdAt(record.get(CHAT.CREATED_AT))
-                .updatedAt(record.get(CHAT.UPDATED_AT))
+                .createdAt(UtcTime.toUtc(record.get(CHAT.CREATED_AT)))
+                .updatedAt(UtcTime.toUtc(record.get(CHAT.UPDATED_AT)))
                 .build();
     }
 
-    private static String likePattern(String query) {
+    private static String buildLikePattern(String query) {
         String escaped = query.trim().toLowerCase(Locale.ROOT)
                 .replace("\\", "\\\\")
                 .replace("%", "\\%")

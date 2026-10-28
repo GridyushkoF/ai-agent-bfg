@@ -4,7 +4,7 @@ spring:
   profiles:
     default: local
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.sql
+    change-log: classpath:db/changelog/db.changelog-master.yaml
   jooq:
     sql-dialect: postgres
   ai:
@@ -31,6 +31,8 @@ app:
     model-history: 40
     title-max: 120
     message-max: 16000
+    page-size: 20
+    max-page-size: 100
 
 server:
   port: 8080

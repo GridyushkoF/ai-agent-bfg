@@ -49,20 +49,20 @@ public class GenerateChatTitleService {
             return "New chat";
         }
         String collapsed = raw.replaceAll("\\s+", " ").trim();
-        if (collapsed.length() >= 2 && wrapped(collapsed)) {
+        if (collapsed.length() >= 2 && isWrapped(collapsed)) {
             collapsed = collapsed.substring(1, collapsed.length() - 1).trim();
         }
         if (collapsed.isEmpty()) {
             return "New chat";
         }
-        int titleMax = chatProperties.getTitleMax();
+        int titleMax = Math.min(chatProperties.getTitleMax(), ChatProperties.TITLE_COLUMN_LIMIT);
         if (collapsed.length() <= titleMax) {
             return collapsed;
         }
         return collapsed.substring(0, titleMax).trim();
     }
 
-    private static boolean wrapped(String value) {
+    private static boolean isWrapped(String value) {
         return (value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"));
     }
 }

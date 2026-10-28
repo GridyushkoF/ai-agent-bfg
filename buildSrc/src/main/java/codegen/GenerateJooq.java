@@ -29,39 +29,46 @@ public final class GenerateJooq {
     public static void run(File projectDir, File outputDir) throws Exception {
         delete(outputDir.toPath());
         Files.createDirectories(outputDir.toPath());
+        String url = System.getenv("JOOQ_JDBC_URL");
+        if (url == null || url.isBlank()) {
+            generateWithContainer(projectDir, outputDir);
+            return;
+        }
+        apply(projectDir, outputDir, url, System.getenv("JOOQ_JDBC_USER"), System.getenv("JOOQ_JDBC_PASSWORD"));
+    }
+
+    private static void generateWithContainer(File projectDir, File outputDir) throws Exception {
         PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16-alpine");
         postgres.start();
         try {
-            migrate(projectDir, postgres);
-            generate(postgres, outputDir);
+            apply(projectDir, outputDir, postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
         } finally {
             postgres.stop();
         }
     }
 
-    private static void migrate(File projectDir, PostgreSQLContainer postgres) throws Exception {
-        try (Connection connection = DriverManager.getConnection(
-                postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())) {
+    private static void apply(File projectDir, File outputDir, String url, String user, String password) throws Exception {
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
             var database = DatabaseFactory.getInstance()
                     .findCorrectDatabaseImplementation(new JdbcConnection(connection));
-            File resources = new File(projectDir, "src/main/resources");
             try (Liquibase liquibase = new Liquibase(
-                    "db/changelog/db.changelog-master.sql",
-                    new DirectoryResourceAccessor(resources),
+                    "db/changelog/db.changelog-master.yaml",
+                    new DirectoryResourceAccessor(new File(projectDir, "src/main/resources")),
                     database)) {
                 liquibase.update();
             }
         }
+        GenerationTool.generate(configuration(outputDir, url, user, password));
     }
 
-    private static void generate(PostgreSQLContainer postgres, File outputDir) throws Exception {
-        Configuration configuration = new Configuration()
+    private static Configuration configuration(File outputDir, String url, String user, String password) {
+        return new Configuration()
                 .withLogging(Logging.WARN)
                 .withJdbc(new Jdbc()
                         .withDriver("org.postgresql.Driver")
-                        .withUrl(postgres.getJdbcUrl())
-                        .withUser(postgres.getUsername())
-                        .withPassword(postgres.getPassword()))
+                        .withUrl(url)
+                        .withUser(user)
+                        .withPassword(password))
                 .withGenerator(new Generator()
                         .withDatabase(new org.jooq.meta.jaxb.Database()
                                 .withName("org.jooq.meta.postgres.PostgresDatabase")
@@ -77,7 +84,6 @@ public final class GenerateJooq {
                         .withTarget(new Target()
                                 .withPackageName("com.aichat.aichatdemo2.jooq")
                                 .withDirectory(outputDir.getAbsolutePath())));
-        GenerationTool.generate(configuration);
     }
 
     private static void delete(Path root) throws Exception {

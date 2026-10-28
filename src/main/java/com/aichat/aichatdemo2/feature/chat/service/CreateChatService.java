@@ -1,5 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat.service;
 
+import com.aichat.aichatdemo2.feature.chat.dto.state.ChatInternalState;
 import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatSummaryResponse;
 import com.aichat.aichatdemo2.feature.chat.mapper.ChatAutoMapper;
 import com.aichat.aichatdemo2.feature.chat.repository.ChatRepository;
@@ -24,8 +25,8 @@ public class CreateChatService {
     @Transactional
     public ChatSummaryResponse create(UUID userId) {
         log.debug("создание чата: вход userId={}", userId);
-        var chat = chatRepository.insert(userId);
+        ChatInternalState chat = chatRepository.insert(userId);
         log.debug("создание чата: выход chatId={}", chat.getId());
-        return chatAutoMapper.toSummary(chat);
+        return chatAutoMapper.mapToSummary(chat);
     }
 }

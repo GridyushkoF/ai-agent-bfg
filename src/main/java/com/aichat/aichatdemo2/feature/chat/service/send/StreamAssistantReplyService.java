@@ -1,7 +1,7 @@
 package com.aichat.aichatdemo2.feature.chat.service.send;
 
 import com.aichat.aichatdemo2.feature.chat.dto.state.MessageInternalState;
-import com.aichat.aichatdemo2.feature.chat.dto.state.MessageRole;
+import com.aichat.aichatdemo2.feature.chat.dto.enumerated.MessageRole;
 import com.aichat.aichatdemo2.platform.exception.TechnicalException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class StreamAssistantReplyService {
         log.debug("поток ответа: вход messages={}", history.size());
         StringBuilder full = new StringBuilder();
         chatClient.prompt()
-                .messages(toMessages(history))
+                .messages(mapToModelMessages(history))
                 .stream()
                 .content()
                 .doOnNext(chunk -> append(chunk, full, onDelta))
@@ -45,7 +45,7 @@ public class StreamAssistantReplyService {
         return full.toString();
     }
 
-    private static List<Message> toMessages(List<MessageInternalState> history) {
+    private static List<Message> mapToModelMessages(List<MessageInternalState> history) {
         List<Message> messages = new ArrayList<>();
         messages.add(new SystemMessage(SYSTEM));
         for (MessageInternalState item : history) {

@@ -1,5 +1,6 @@
 package com.aichat.aichatdemo2.feature.chat.dto.web.request;
 
+import com.aichat.aichatdemo2.feature.chat.validation.MessageContent;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 public class SendMessageRequest {
 
-    @NotBlank
+    @NotBlank(message = "не должно быть пустым")
     @MessageContent
     private String content;
 }

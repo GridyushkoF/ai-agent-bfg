@@ -1,5 +1,6 @@
 package com.aichat.aichatdemo2.support;
 
+import com.aichat.aichatdemo2.feature.user.dto.web.request.RegisterRequest;
 import com.aichat.aichatdemo2.platform.util.ApiPaths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,14 +46,22 @@ public abstract class AbstractIntegrationTest {
     protected String register(String login) throws Exception {
         MvcResult result = mockMvc.perform(post(ApiPaths.Auth.register())
                         .contentType(APPLICATION_JSON)
-                        .content(body(login)))
+                        .content(writeJson(buildRegisterRequest(login))))
                 .andExpect(status().isCreated())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("accessToken").asString();
     }
 
-    protected static String body(String login) {
-        return "{\"login\":\"" + login + "\",\"email\":\"" + login + "@example.com\",\"password\":\"password123\"}";
+    protected String writeJson(Object value) throws Exception {
+        return objectMapper.writeValueAsString(value);
+    }
+
+    protected static RegisterRequest buildRegisterRequest(String login) {
+        return RegisterRequest.builder()
+                .login(login)
+                .email(login + "@example.com")
+                .password("password123")
+                .build();
     }
 
     protected static String loginOf(String seed) {

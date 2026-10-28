@@ -15,11 +15,11 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 public class LoginRequest {
 
-    @NotBlank
-    @Size(min = 3, max = 64)
+    @NotBlank(message = "не должно быть пустым")
+    @Size(min = 3, max = 64, message = "длина должна быть от {min} до {max}")
     private String login;
 
-    @NotBlank
-    @Size(min = 8, max = 72)
+    @NotBlank(message = "не должно быть пустым")
+    @Size(min = 8, max = 72, message = "длина должна быть от {min} до {max}")
     private String password;
 }

@@ -27,7 +27,7 @@ public class UserController {
 
     @GetMapping(ApiPaths.Users.ME)
     @Operation(summary = "Текущий пользователь", description = "Возвращает профиль по JWT из заголовка Authorization.")
-    public UserResponse me() {
-        return currentUserService.me(currentUser.id());
+    public UserResponse getProfile() {
+        return currentUserService.getProfile(currentUser.requireId());
     }
 }

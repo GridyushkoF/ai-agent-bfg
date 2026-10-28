@@ -1,21 +1,25 @@
 package com.aichat.aichatdemo2.platform.config;
 
+import jakarta.annotation.PreDestroy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class AsyncConfig {
 
+    private final ExecutorService chatStreams = Executors.newVirtualThreadPerTaskExecutor();
+
     @Bean
     public TaskExecutor chatStreamExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(200);
-        executor.setThreadNamePrefix("chat-sse-");
-        executor.initialize();
-        return executor;
+        return chatStreams::execute;
+    }
+
+    @PreDestroy
+    public void shutdownChatStreams() {
+        chatStreams.shutdown();
     }
 }

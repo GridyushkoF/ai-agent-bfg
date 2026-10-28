@@ -17,17 +17,17 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank
-    @Size(min = 3, max = 64)
-    @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Login may contain letters, digits, dot, underscore and hyphen")
+    @NotBlank(message = "не должно быть пустым")
+    @Size(min = 3, max = 64, message = "длина должна быть от {min} до {max}")
+    @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "может содержать только латиницу, цифры, точку, подчёркивание и дефис")
     private String login;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
+    @NotBlank(message = "не должно быть пустым")
+    @Email(message = "должно быть корректным адресом электронной почты")
+    @Size(max = 255, message = "длина должна быть не больше {max}")
     private String email;
 
-    @NotBlank
-    @Size(min = 8, max = 72)
+    @NotBlank(message = "не должно быть пустым")
+    @Size(min = 8, max = 72, message = "длина должна быть от {min} до {max}")
     private String password;
 }

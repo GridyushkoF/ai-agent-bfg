@@ -24,11 +24,11 @@ public class CurrentUserService {
      * Возвращает профиль пользователя.
      */
     @Transactional(readOnly = true)
-    public UserResponse me(UUID userId) {
+    public UserResponse getProfile(UUID userId) {
         log.debug("профиль: вход userId={}", userId);
         UserInternalState user = userRepository.findById(userId)
-                .orElseThrow(() -> BusinessException.unauthorized("Authentication required"));
+                .orElseThrow(() -> BusinessException.createUnauthorized("Authentication required"));
         log.debug("профиль: выход login={}", user.getLogin());
-        return userAutoMapper.toUser(user);
+        return userAutoMapper.mapToUser(user);
     }
 }

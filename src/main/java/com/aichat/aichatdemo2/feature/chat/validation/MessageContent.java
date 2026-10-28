@@ -1,4 +1,4 @@
-package com.aichat.aichatdemo2.feature.chat.dto.web.request;
+package com.aichat.aichatdemo2.feature.chat.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MessageContent {
 
-    String message() default "Message is too long";
+    String message() default "сообщение слишком длинное";
 
     Class<?>[] groups() default {};
 

@@ -1,4 +1,4 @@
-package com.aichat.aichatdemo2.feature.chat.dto.web.request;
+package com.aichat.aichatdemo2.feature.chat.validation;
 
 import com.aichat.aichatdemo2.feature.chat.ChatProperties;
 import jakarta.validation.ConstraintValidator;
@@ -18,7 +18,7 @@ public class MessageContentValidator implements ConstraintValidator<MessageConte
             return true;
         }
         context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate("size must be at most " + chatProperties.getMessageMax())
+        context.buildConstraintViolationWithTemplate("длина должна быть не больше " + chatProperties.getMessageMax())
                 .addConstraintViolation();
         return false;
     }

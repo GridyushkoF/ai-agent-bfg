@@ -26,16 +26,16 @@ public class ValidationExceptionHandler {
         Map<String, Object> details = new LinkedHashMap<>();
         exception.getBindingResult().getFieldErrors()
                 .forEach(error -> details.putIfAbsent(error.getField(), error.getDefaultMessage()));
-        return errors.entity(HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION, "Validation failed", details);
+        return errors.buildResponse(HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION, "Ошибка валидации", details);
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ErrorResponse> handleMalformed() {
-        return errors.entity(HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION, "Request is malformed", Map.of());
+        return errors.buildResponse(HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION, "Запрос составлен неверно", Map.of());
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException exception) {
-        return errors.entity(exception.getStatus(), exception.getCode(), exception.getMessage(), exception.getDetails());
+        return errors.buildResponse(exception.getStatus(), exception.getCode(), exception.getMessage(), exception.getDetails());
     }
 }

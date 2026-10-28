@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
@@ -66,7 +69,23 @@ class RegisterUserServiceTest {
         verify(userRepository, never()).insert(anyString(), anyString(), anyString());
     }
 
+    @Test
+    void mapsEmailConstraintWithoutParsingMessageText() {
+        when(passwordEncoder.encode(anyString())).thenReturn("hash");
+        when(userRepository.insert(anyString(), anyString(), anyString()))
+                .thenThrow(duplicate("ux_app_user_email", "duplicate key"));
+        assertThatThrownBy(() -> registerUserService.register(request()))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getCode())
+                .isEqualTo(ErrorCodes.EMAIL_TAKEN);
+    }
+
     private static RegisterRequest request() {
         return RegisterRequest.builder().login("Alice").email("A@b.c").password("password123").build();
+    }
+
+    private static DuplicateKeyException duplicate(String constraint, String message) {
+        var server = new ServerErrorMessage("SERROR\0C23505\0n" + constraint + "\0M" + message + "\0\0");
+        return new DuplicateKeyException(message, new PSQLException(server));
     }
 }

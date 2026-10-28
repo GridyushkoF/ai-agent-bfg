@@ -2,6 +2,7 @@ package com.aichat.aichatdemo2.feature.chat.controller;
 
 import com.aichat.aichatdemo2.feature.chat.dto.web.request.SendMessageRequest;
 import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatDetailsResponse;
+import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatPageResponse;
 import com.aichat.aichatdemo2.feature.chat.dto.web.response.ChatSummaryResponse;
 import com.aichat.aichatdemo2.feature.chat.service.CreateChatService;
 import com.aichat.aichatdemo2.feature.chat.service.GetChatService;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
 import java.util.UUID;
 
 @Validated
@@ -50,21 +50,25 @@ public class ChatController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Создать чат", description = "Создаёт пустой чат текущего пользователя. Заголовок появится после первого сообщения.")
     public ChatSummaryResponse create() {
-        return createChatService.create(currentUser.id());
+        return createChatService.create(currentUser.requireId());
     }
 
     @GetMapping
-    @Operation(summary = "Список чатов", description = "Возвращает чаты пользователя. Непустой query ищет по заголовку без учёта регистра.")
-    public List<ChatSummaryResponse> list(
-            @Parameter(description = "Подстрока заголовка. Пустое значение возвращает все чаты.")
-            @RequestParam(name = "query", required = false) String query) {
-        return searchChatService.search(currentUser.id(), query);
+    @Operation(summary = "Список чатов", description = "Страница чатов пользователя, новые сверху. query ищет по заголовку без учёта регистра.")
+    public ChatPageResponse list(
+            @Parameter(description = "Подстрока заголовка") @RequestParam(name = "query", required = false) String query,
+            @Parameter(description = "Размер страницы") @RequestParam(name = "limit", required = false) Integer limit,
+            @Parameter(description = "Курсор следующей страницы") @RequestParam(name = "cursor", required = false) String cursor) {
+        return searchChatService.search(currentUser.requireId(), query, limit, cursor);
     }
 
     @GetMapping(ApiPaths.Chats.BY_ID)
-    @Operation(summary = "Открыть чат", description = "Возвращает чат и полную историю сообщений. Чужой чат отвечает как ненайденный.")
-    public ChatDetailsResponse get(@Parameter(description = "Идентификатор чата") @PathVariable UUID chatId) {
-        return getChatService.get(currentUser.id(), chatId);
+    @Operation(summary = "Открыть чат", description = "Возвращает чат и страницу последних сообщений. Курсор запрашивает более старые. Чужой чат отвечает как ненайденный.")
+    public ChatDetailsResponse get(
+            @Parameter(description = "Идентификатор чата") @PathVariable UUID chatId,
+            @Parameter(description = "Размер страницы сообщений") @RequestParam(name = "limit", required = false) Integer limit,
+            @Parameter(description = "Курсор более старых сообщений") @RequestParam(name = "cursor", required = false) String cursor) {
+        return getChatService.get(currentUser.requireId(), chatId, limit, cursor);
     }
 
     @PostMapping(value = ApiPaths.Chats.MESSAGES, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -72,6 +76,6 @@ public class ChatController {
     public SseEmitter send(
             @Parameter(description = "Идентификатор чата") @PathVariable UUID chatId,
             @Valid @RequestBody SendMessageRequest request) {
-        return sendMessageFacade.send(currentUser.id(), chatId, request);
+        return sendMessageFacade.send(currentUser.requireId(), chatId, request);
     }
 }

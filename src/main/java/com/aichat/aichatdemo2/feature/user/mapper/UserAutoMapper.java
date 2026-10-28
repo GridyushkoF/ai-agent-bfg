@@ -11,9 +11,9 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface UserAutoMapper {
 
-    UserResponse toUser(UserInternalState state);
+    UserResponse mapToUser(UserInternalState state);
 
     @Mapping(target = "tokenType", constant = "Bearer")
     @Mapping(target = "user", source = "user")
-    AuthResponse toAuth(AuthInternalState state);
+    AuthResponse mapToAuth(AuthInternalState state);
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,13 +24,21 @@ class ChatIntegrationTest extends AbstractIntegrationTest {
 
         mockMvc.perform(get(ApiPaths.Chats.BASE).header(AUTHORIZATION, "Bearer " + owner))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(chatId))
-                .andExpect(jsonPath("$[0].title").value(nullValue()));
-        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + owner))
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(chatId))
+                .andExpect(jsonPath("$.items[0].title").value(nullValue()))
+                .andExpect(jsonPath("$.nextCursor").value(nullValue()));
+        mockMvc.perform(get(ApiPaths.Chats.BASE).param("cursor", "bad").header(AUTHORIZATION, "Bearer " + owner))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION"))
+                .andExpect(jsonPath("$.message").value("Ошибка валидации"))
+                .andExpect(jsonPath("$.details.cursor").value("курсор составлен неверно"));
+        mockMvc.perform(get(ApiPaths.Chats.buildChatPath(chatId)).header(AUTHORIZATION, "Bearer " + owner))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.createdAt", endsWith("Z")))
+                .andExpect(jsonPath("$.updatedAt", endsWith("Z")))
                 .andExpect(jsonPath("$.messages.length()").value(0));
-        mockMvc.perform(get(ApiPaths.Chats.chat(chatId)).header(AUTHORIZATION, "Bearer " + other))
+        mockMvc.perform(get(ApiPaths.Chats.buildChatPath(chatId)).header(AUTHORIZATION, "Bearer " + other))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }

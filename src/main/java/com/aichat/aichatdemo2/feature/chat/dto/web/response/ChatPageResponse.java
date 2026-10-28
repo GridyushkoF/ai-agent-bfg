@@ -1,0 +1,18 @@
+package com.aichat.aichatdemo2.feature.chat.dto.web.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChatPageResponse {
+
+    private List<ChatSummaryResponse> items;
+    private String nextCursor;
+}

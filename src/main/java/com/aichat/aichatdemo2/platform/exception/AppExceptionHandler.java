@@ -26,12 +26,12 @@ public class AppExceptionHandler {
         } else {
             log.debug("запрос отклонён code={} message={}", exception.getCode(), exception.getMessage());
         }
-        return errors.entity(exception.getStatus(), exception.getCode(), exception.getMessage(), exception.getDetails());
+        return errors.buildResponse(exception.getStatus(), exception.getCode(), exception.getMessage(), exception.getDetails());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception exception) {
         log.error("непредвиденная ошибка", exception);
-        return errors.entity(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.TECHNICAL, "Internal error", Map.of());
+        return errors.buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.TECHNICAL, "Internal error", Map.of());
     }
 }

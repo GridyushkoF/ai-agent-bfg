@@ -40,4 +40,12 @@ class GenerateChatTitleServiceTest {
         assertThat(service.normalize("   ")).isEqualTo("New chat");
         assertThat(service.normalize(null)).isEqualTo("New chat");
     }
+
+    @Test
+    void normalizeCapsAtColumnLimit() {
+        ChatProperties properties = new ChatProperties();
+        properties.setTitleMax(500);
+        var capped = new GenerateChatTitleService(ChatClient.create(new StubChatModel()), chatRepository, properties);
+        assertThat(capped.normalize("a".repeat(200))).hasSize(ChatProperties.TITLE_COLUMN_LIMIT);
+    }
 }

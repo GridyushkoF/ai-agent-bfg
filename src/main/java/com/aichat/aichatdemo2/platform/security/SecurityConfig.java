@@ -39,8 +39,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(errors -> errors
-                        .authenticationEntryPoint(this::unauthorized)
-                        .accessDeniedHandler(this::forbidden))
+                        .authenticationEntryPoint(this::writeUnauthorized)
+                        .accessDeniedHandler(this::writeForbidden))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, ApiPaths.Auth.register(), ApiPaths.Auth.login()).permitAll()
                         .requestMatchers(ApiPaths.Docs.SWAGGER_UI, ApiPaths.Docs.SWAGGER, ApiPaths.Docs.API_DOCS, ApiPaths.Docs.API_DOCS_ALL).permitAll()
@@ -61,12 +61,12 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
-    private void unauthorized(HttpServletRequest request, HttpServletResponse response,
+    private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response,
                               org.springframework.security.core.AuthenticationException exception) throws IOException {
         errorHttpWriter.write(response, HttpStatus.UNAUTHORIZED, ErrorCodes.UNAUTHORIZED, "Authentication required");
     }
 
-    private void forbidden(HttpServletRequest request, HttpServletResponse response,
+    private void writeForbidden(HttpServletRequest request, HttpServletResponse response,
                            org.springframework.security.access.AccessDeniedException exception) throws IOException {
         errorHttpWriter.write(response, HttpStatus.FORBIDDEN, ErrorCodes.FORBIDDEN, "Access denied");
     }

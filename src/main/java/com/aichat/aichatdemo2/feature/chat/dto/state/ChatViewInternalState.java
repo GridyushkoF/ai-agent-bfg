@@ -15,4 +15,5 @@ public class ChatViewInternalState {
 
     private ChatInternalState chat;
     private List<MessageInternalState> messages;
+    private String nextCursor;
 }
